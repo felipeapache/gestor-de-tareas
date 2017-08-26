@@ -1,7 +1,13 @@
 var express = require("express");
 var bodyParser = require("body-parser");
+//MYSQL
+var connection = require("express-myconnection");
+var mysql = require("mysql");
+var config = require("./config");
+
 var server = express();
 
+server.use(connection(mysql, config.db, 'request'));
 server.use(bodyParser.urlencoded({ extended: false }));
 server.use(bodyParser.json());
 
@@ -17,40 +23,44 @@ server.get("/login-get", function(req, res){
 	}	
 });
 
-server.post("/login", function(req, res){
-	var parametros = req.body;
-	var user = validPassword(parametros.password);
-	if(validUser(parametros.user) && user){
-		res.json(user);
-	} else {
-		res.json({ state: "ERROR", description: "El usuario no existe" });	
-	}	
+server.post("/signup", function(req, res){
+	var user = req.body;
+	user.fecha = new Date();
+	req.getConnection(function(error, connection){
+		var query = connection.query("INSERT INTO user set ?", user, function(err, data){
+			if(err){
+				console.log(err);
+				res.json(err);
+			} else {
+				//Terminar registro y validar
+				//1. Que el usuario no exista
+				res.json(data);
+			}
+		});
+	});
 });
 
-function validPassword(password){
-	for (var i = 0; i < db.length; i++) {
-		if(db[i].password == password){
-			return db[i];
-		}
-	}
-	return false;
-}
-
-
-function validUser(user){
-	for (var i = 0; i < db.length; i++) {
-		if(db[i].user == user){
-			return true;
-		}
-	}
-	return false;
-}
+server.post("/login", function(req, res){
+	req.getConnection(function(error, connection){
+		var query = connection.query("SELECT * FROM user", function(err, data){
+			if(err){
+				console.log(err);
+				res.json(err);
+			} else {
+				//Terminar login y validar
+				//1. El usuario no existe
+				//2. Contraseña invalida
+				res.json(data);
+			}
+		});
+	});
+});
 
 var db = [
 	{ id: 1, name: "Apache", user: "a.pache", password: 123 },
 	{ id: 2, name: "Yeison", user: "y.eison", password: 1234 }
 ];
 
-server.listen(3000, function(){
+server.listen(config.server.port, function(){
 	console.log("servidor corriendo")
 });
