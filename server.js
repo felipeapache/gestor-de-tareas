@@ -56,10 +56,21 @@ server.post("/login", function(req, res){
 	});
 });
 
-var db = [
-	{ id: 1, name: "Apache", user: "a.pache", password: 123 },
-	{ id: 2, name: "Yeison", user: "y.eison", password: 1234 }
-];
+/*
+	entidad: user
+	id
+	user
+	name
+	lastname
+	fecha,
+
+	entidad: tareas
+	id
+	name
+	description
+	fecha
+	state
+*/
 
 server.listen(config.server.port, function(){
 	console.log("servidor corriendo")
